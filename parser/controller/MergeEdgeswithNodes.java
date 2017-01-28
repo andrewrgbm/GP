@@ -1,62 +1,67 @@
-package basicosmparser;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.Scanner;
 
-public class MergeEdgeswithNodes {
-
+public class Merge {
 	public static void main(String[] args) throws IOException {
-		MergeEdgeswithNodes m = new MergeEdgeswithNodes();
-		File fOne = new File("nodesv2.txt");
-		File fTwo = new File("sortedEdges.txt");
-		m.mergeFiles(fOne, fTwo);
+		File file1 = new File("test1.txt");
+		File file2 = new File("test2.txt");
+		FileWriter fileWriter = new FileWriter("output.txt");
+
+		merge(file1, file2, fileWriter);
 	}
 
-	private void mergeFiles(File fOne, File fTwo) throws IOException {
-		BufferedReader brOne = new BufferedReader(new FileReader(fOne));
-		BufferedReader brTwo = new BufferedReader(new FileReader(fTwo));
-		File listFile = new File("latLng.txt");
-		PrintWriter listWriter = new PrintWriter(new FileWriter(listFile));
-		int count =0;
-		while (true) {
-			String sOne = brOne.readLine();
-			if(sOne==null)
-				break;
-			String nodeArrOne[] = sOne.split(";");
-			String nodeIdOne = nodeArrOne[0];
-			long lastTwo=-1;
-			long id1=Long.parseLong(nodeIdOne);
+	public static void merge(File file1, File file2, FileWriter out) throws IOException {
+		Scanner nodesScanner = new Scanner(file1);
+		Scanner edgesScanner = new Scanner(file2);
+		String[] nodesMatches;
+		String[] edgesMatches = null;
+		String nodeId = null;
+		String edgeId = null;
+		String str2;
+		boolean flag = true;
+		boolean prflag = false;
+		while (nodesScanner.hasNext()) {
+			String str1 = nodesScanner.nextLine();
+			nodesMatches = str1.split(";");
+			if (flag == true) {
+				str2 = edgesScanner.nextLine();
+				edgesMatches = str2.split(";");
+				nodeId = nodesMatches[0];
+				edgeId = edgesMatches[0];
+				flag = false;
+			} else {
+				nodeId = nodesMatches[0];
+			}
 
-			while(true)
-			{
-				if(lastTwo!=-1&&lastTwo==id1)
-				{
-					listWriter.print(id1+";"+nodeArrOne[1]+";"+nodeArrOne[2]+"\n");
-				}
-				String sTwo = brTwo.readLine();
-				if(sTwo==null)
-					break;
-				String nodeArrTwo[] = sTwo.split(";");
-				String nodeIdTwo = nodeArrTwo[0];
-				long id2=Long.parseLong(nodeIdTwo);
+			if (nodeId.equals(edgeId)) {
+				out.write(nodeId + ":");
+				while (nodeId.equals(edgeId)) {
+					out.write(edgesMatches[1]);
 
-				if (id1==id2) {
-					listWriter.print(id1+";"+nodeArrTwo[1]+";"+nodeArrOne[1]+";"+nodeArrOne[2]+"\n");
-					count++;
+					if (edgesScanner.hasNext()) {
+
+						str2 = edgesScanner.nextLine();
+						edgesMatches = str2.split(";");
+						edgeId = edgesMatches[0];
+						if (nodeId.equals(edgeId)) {
+							out.write(",");
+						}
+					} else {
+						prflag = true;
+						break;
+					}
 				}
-				if(id1<id2)
-				{
-					lastTwo=id2;
-					break;
-				}
-				
-			
+				if (prflag) {
+
+				} else
+					out.write("\n");
 			}
 		}
-		System.out.println(count);
+		nodesScanner.close();
+		edgesScanner.close();
+		out.close();
 	}
+
 }
